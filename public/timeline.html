@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GFox Git">
+    <title>GFox Git ~ Visual Timeline</title>
+    <link rel="stylesheet" href="geefox.css">
+    <style>
+        :root {
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glow-blue: rgba(59, 130, 246, 0.4);
+            --glow-green: rgba(16, 185, 129, 0.4);
+            --glow-purple: rgba(139, 92, 246, 0.4);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+            overscroll-behavior-y: contain;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 100vh;
+        }
+        
+        /* Premium Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: max(16px, var(--safe-area-top)) 20px 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header h1 {
+            flex: 1;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: #f1f5f9;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Timeline Container */
+        .timeline-container {
+            padding: 24px 20px 120px;
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+        
+        /* Commit Node - Premium Style */
+        .commit-node {
+            position: relative;
+            padding-left: 48px;
+            padding-bottom: 32px;
+            opacity: 0;
+            animation: slideIn 0.5s ease forwards;
+        }
+        
+        .commit-node:nth-child(1) { animation-delay: 0.1s; }
+        .commit-node:nth-child(2) { animation-delay: 0.2s; }
+        .commit-node:nth-child(3) { animation-delay: 0.3s; }
+        .commit-node:nth-child(4) { animation-delay: 0.4s; }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .commit-node:last-child {
+            padding-bottom: 0;
+        }
+        
+        .branch-line {
+            position: absolute;
+            left: 19px;
+            top: 32px;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(59, 130, 246, 0.3), rgba(148, 163, 184, 0.1));
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+        }
+        
+        .commit-node:last-child .branch-line {
+            display: none;
+        }
+        
+        .commit-dot {
+            position: absolute;
+            left: 12px;
+            top: 24px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: 3px solid #0f172a;
+            z-index: 10;
+            box-shadow: 0 0 0 2px #3b82f6, 0 0 20px var(--glow-blue);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .commit-node:first-child .commit-dot {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 0 0 2px #10b981, 0 0 30px var(--glow-green), 0 0 60px var(--glow-green);
+            animation: pulse 2s infinite, glow 3s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 0 2px #10b981, 0 0 30px var(--glow-green), 0 0 60px var(--glow-green); }
+            50% { box-shadow: 0 0 0 4px #10b981, 0 0 40px var(--glow-green), 0 0 80px var(--glow-green); }
+        }
+        
+        .commit-node:hover .commit-dot {
+            transform: scale(1.2);
+        }
+        
+        /* Commit Card - Glass Morphism */
+        .commit-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .commit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+        
+        .commit-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .commit-card:active {
+            transform: scale(0.98);
+        }
+        
+        .commit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+        
+        .commit-message {
+            font-weight: 600;
+            font-size: 15px;
+            color: #f1f5f9;
+            line-height: 1.5;
+            word-break: break-word;
+            flex: 1;
+        }
+        
+        .commit-hash {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #94a3b8;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            border: 1px solid var(--glass-border);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        .commit-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .commit-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .author-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .author-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .commit-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #94a3b8;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .commit-time svg {
+            width: 14px;
+            height: 14px;
+            color: #60a5fa;
+        }
+        
+        .commit-branch {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            color: #60a5fa;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Commit Detail Modal - Premium */
+        .commit-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .commit-modal-overlay.active {
+            display: flex;
+        }
+        
+        .commit-modal {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 32px 32px 0 0;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-top: 1px solid var(--glass-border);
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 10;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .modal-sha {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .modal-close {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: #f1f5f9;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            transform: rotate(90deg);
+        }
+        
+        .modal-content {
+            padding: 24px 20px;
+        }
+        
+        .commit-info-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .info-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            min-width: 80px;
+            margin-top: 4px;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: #f1f5f9;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .info-value a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        
+        /* File Changes Section */
+        .files-section {
+            margin-top: 24px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-change {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        
+        .file-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .file-header:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .file-path {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+        
+        .file-status {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .file-status.added {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .file-status.modified {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .file-status.deleted {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .file-stats {
+            display: flex;
+            gap: 8px;
+            margin-left: 12px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        
+        .file-stats .additions {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .file-stats .deletions {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        
+        .file-diff {
+            display: none;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            overflow-x: auto;
+        }
+        
+        .file-diff.expanded {
+            display: block;
+        }
+        
+        .diff-line {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            padding: 2px 0;
+            white-space: pre;
+        }
+        
+        .diff-line.added {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .diff-line.deleted {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .diff-line.context {
+            color: #94a3b8;
+        }
+        
+        .diff-line .line-number {
+            color: #475569;
+            margin-right: 12px;
+            user-select: none;
+        }
+        
+        /* Loading States */
+        .loading-state, .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            color: #94a3b8;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px var(--glow-blue);
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 640px) {
+            .stats-bar {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .commit-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .commit-modal {
+                max-height: 95vh;
+            }
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.5);
+        }
+        /* ===== FIX 1: Make Close Button X Icon Visible ===== */
+.modal-close {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border: 2px solid rgba(239, 68, 68, 0.5) !important;
+    color: #fef2f2 !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+}
+
+.modal-close:hover {
+    background: rgba(239, 68, 68, 0.4) !important;
+    border-color: rgba(239, 68, 68, 0.8) !important;
+    transform: rotate(90deg) scale(1.1) !important;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5) !important;
+}
+
+.modal-close svg {
+    width: 22px !important;
+    height: 22px !important;
+    stroke-width: 3 !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) !important;
+}
+
+/* ===== FIX 2: Limit Image Size in Commit Cards ===== */
+.commit-card img {
+    max-width: 100% !important;
+    max-height: 300px !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    border-radius: 12px !important;
+    margin: 12px 0 !important;
+    display: block !important;
+}
+
+/* Alternative: If images are in commit message body */
+.commit-message img {
+    max-width: 100% !important;
+    max-height: 250px !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+}
+
+/* Ensure images don't break layout */
+.commit-card {
+    overflow: hidden !important;
+}
+
+/* Make images clickable to view full size */
+.commit-card img {
+    cursor: pointer !important;
+    transition: transform 0.2s !important;
+}
+
+.commit-card img:hover {
+    transform: scale(1.02) !important;
+}
+
+/* ===== FIX 3: Better Modal Header Layout ===== */
+.modal-header {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    position: relative !important;
+}
+
+/* Ensure close button is always on top */
+.modal-close {
+    position: relative !important;
+    z-index: 20 !important;
+}
+
+/* ===== FIX 4: Responsive Image Handling ===== */
+@media (max-width: 640px) {
+    .commit-card img {
+        max-height: 200px !important;
+    }
+    
+    .modal-close {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    .modal-close svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+}
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <button class="header-btn" onclick="window.history.back()" title="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+    </button>
+    <h1>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        <span id="repo-name-display">Timeline</span>
+    </h1>
+    <button class="header-btn" onclick="loadCommits()" title="Refresh">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+        </svg>
+    </button>
+</div>
+
+<div class="timeline-container" id="timeline-container">
+    <div class="loading-state" id="loading-state">
+        <div class="spinner"></div>
+        <p>Loading commit history...</p>
+    </div>
+</div>
+
+<!-- Commit Detail Modal -->
+<div class="commit-modal-overlay" id="commit-modal" onclick="closeModalOnOverlay(event)">
+    <div class="commit-modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <div style="flex: 1;">
+                <div class="modal-title" id="modal-commit-message">Loading...</div>
+                <div class="modal-sha">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <span id="modal-commit-sha"></span>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeCommitModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-content" id="modal-content">
+            <div class="loading-state" style="min-height: 200px;">
+                <div class="spinner" style="width: 32px; height: 32px;"></div>
+                <p>Loading commit details...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let state = { owner: '', token: '', currentRepo: '', currentBranch: 'main' };
+
+async function init() {
+    try {
+        const res = await fetch('/api/token', { credentials: 'include' });
+        if (!res.ok) throw new Error('Auth failed');
+        const data = await res.json();
+        state.token = data.token;
+        
+        const userRes = await fetch(`https://api.github.com/user`, { 
+            headers: { 'Authorization': `token ${state.token}` } 
+        });
+        const userData = await userRes.json();
+        state.owner = userData.login;
+    } catch (err) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    state.currentRepo = params.get('repo');
+    state.currentBranch = params.get('branch') || 'main';
+
+    if (!state.currentRepo) { 
+        window.location.href = 'index.html'; 
+        return; 
+    }
+    
+    document.getElementById('repo-name-display').textContent = state.currentRepo;
+    loadCommits();
+}
+
+async function githubAPI(endpoint, options = {}) {
+    const url = `https://api.github.com${endpoint}`;
+    const headers = { 
+        'Authorization': `token ${state.token}`, 
+        'Accept': 'application/vnd.github.v3+json', 
+        ...options.headers 
+    };
+    const response = await fetch(url, { ...options, headers });
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || `GitHub API error: ${response.status}`);
+    }
+    return response;
+}
+
+async function loadCommits() {
+    const container = document.getElementById('timeline-container');
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading commit history...</p>
+        </div>
+    `;
+    
+    try {
+        const res = await githubAPI(`/repos/${state.owner}/${state.currentRepo}/commits?sha=${state.currentBranch}&per_page=50`);
+        const commits = await res.json();
+        
+        if (commits.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:64px;height:64px;margin-bottom:20px;opacity:0.3;">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    <p style="font-size: 16px; color: #94a3b8;">No commits found on this branch.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Calculate stats
+        const totalCommits = commits.length;
+        const uniqueAuthors = new Set(commits.map(c => c.commit.author.name)).size;
+        const firstCommitDate = commits[commits.length - 1]?.commit.author.date;
+        const lastCommitDate = commits[0]?.commit.author.date;
+        
+        container.innerHTML = `
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value">${totalCommits}</div>
+                    <div class="stat-label">Commits</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${uniqueAuthors}</div>
+                    <div class="stat-label">Contributors</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${getTimeAgo(new Date(firstCommitDate))}</div>
+                    <div class="stat-label">First Commit</div>
+                </div>
+            </div>
+            ${commits.map((commit, index) => renderCommitNode(commit, index)).join('')}
+        `;
+    } catch (err) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <p style="color:#ef4444; font-size: 16px; margin-bottom: 16px;">Error loading commits: ${err.message}</p>
+                <button onclick="loadCommits()" style="padding:12px 24px;background:linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);color:white;border:none;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;">Retry</button>
+            </div>
+        `;
+    }
+}
+
+function renderCommitNode(commit, index) {
+    const sha = commit.sha.substring(0, 7);
+    const fullSha = commit.sha;
+    const message = commit.commit.message.split('\n')[0];
+    const author = commit.commit.author.name;
+    const date = new Date(commit.commit.author.date);
+    const timeAgo = getTimeAgo(date);
+    const avatarUrl = commit.author?.avatar_url || null;
+    const isHead = index === 0;
+    
+    return `
+        <div class="commit-node" style="animation-delay: ${index * 0.1}s">
+            <div class="branch-line"></div>
+            <div class="commit-dot" onclick="showCommitDetails('${fullSha}')"></div>
+            <div class="commit-card" onclick="showCommitDetails('${fullSha}')">
+                <div class="commit-header">
+                    <div class="commit-message">${escapeHtml(message)}</div>
+                    <div class="commit-hash">${sha}</div>
+                </div>
+                <div class="commit-meta">
+                    <div class="commit-author">
+                        ${avatarUrl 
+                            ? `<img src="${avatarUrl}" alt="${author}">` 
+                            : `<div class="author-avatar">${author.charAt(0).toUpperCase()}</div>`
+                        }
+                        <span>${escapeHtml(author)}</span>
+                    </div>
+                    <div class="commit-time">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        ${timeAgo}
+                    </div>
+                    <span class="commit-branch">${state.currentBranch}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function showCommitDetails(sha) {
+    const modal = document.getElementById('commit-modal');
+    const content = document.getElementById('modal-content');
+    const messageEl = document.getElementById('modal-commit-message');
+    const shaEl = document.getElementById('modal-commit-sha');
+    
+    modal.classList.add('active');
+    content.innerHTML = `
+        <div class="loading-state" style="min-height: 200px;">
+            <div class="spinner" style="width: 32px; height: 32px;"></div>
+            <p>Loading commit details...</p>
+        </div>
+    `;
+    
+    try {
+        // Fetch commit details
+        const commitRes = await githubAPI(`/repos/${state.owner}/${state.currentRepo}/commits/${sha}`);
+        const commitData = await commitRes.json();
+        
+        // Fetch commit comparison to get file changes
+        const parentSha = commitData.parents[0]?.sha;
+        let files = [];
+        
+        if (parentSha) {
+            try {
+                const compareRes = await githubAPI(`/repos/${state.owner}/${state.currentRepo}/compare/${parentSha}...${sha}`);
+                const compareData = await compareRes.json();
+                files = compareData.files || [];
+            } catch (e) {
+                console.error('Failed to fetch file changes:', e);
+            }
+        }
+        
+        messageEl.textContent = commitData.commit.message.split('\n')[0];
+        shaEl.textContent = sha;
+        
+        const author = commitData.commit.author;
+        const committer = commitData.commit.committer;
+        
+        content.innerHTML = `
+            <div class="commit-info-section">
+                <div class="info-row">
+                    <div class="info-label">Author</div>
+                    <div class="info-value">
+                        ${commitData.author?.login 
+                            ? `<a href="${commitData.author.html_url}" target="_blank">@${commitData.author.login}</a>` 
+                            : escapeHtml(author.name)
+                        }
+                        ${author.email ? `<br><span style="color:#94a3b8;font-size:12px;">${escapeHtml(author.email)}</span>` : ''}
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Committer</div>
+                    <div class="info-value">
+                        ${escapeHtml(committer.name)}
+                        ${committer.email ? `<br><span style="color:#94a3b8;font-size:12px;">${escapeHtml(committer.email)}</span>` : ''}
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Date</div>
+                    <div class="info-value">${new Date(author.date).toLocaleString()}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Message</div>
+                    <div class="info-value" style="white-space: pre-wrap;">${escapeHtml(commitData.commit.message)}</div>
+                </div>
+                ${commitData.stats ? `
+                <div class="info-row">
+                    <div class="info-label">Changes</div>
+                    <div class="info-value">
+                        <span style="color:#10b981;font-weight:600;">+${commitData.stats.additions}</span>
+                        <span style="color:#94a3b8;margin:0 8px;">•</span>
+                        <span style="color:#ef4444;font-weight:600;">-${commitData.stats.deletions}</span>
+                        <span style="color:#94a3b8;margin-left:8px;">(${commitData.stats.total} files)</span>
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div class="files-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Files Changed (${files.length})
+                </div>
+                ${files.length > 0 ? files.map(file => renderFileChange(file)).join('') : '<p style="color:#94a3b8;text-align:center;padding:20px;">No file changes</p>'}
+            </div>
+        `;
+    } catch (err) {
+        content.innerHTML = `
+            <div class="empty-state" style="min-height: 200px;">
+                <p style="color:#ef4444;">Error loading commit details: ${err.message}</p>
+            </div>
+        `;
+    }
+}
+
+function renderFileChange(file) {
+    const status = file.status === 'added' ? 'Added' : file.status === 'deleted' ? 'Deleted' : 'Modified';
+    const statusClass = file.status === 'added' ? 'added' : file.status === 'deleted' ? 'deleted' : 'modified';
+    const additions = file.additions || 0;
+    const deletions = file.deletions || 0;
+    
+    return `
+        <div class="file-change">
+            <div class="file-header" onclick="toggleFileDiff('${file.filename.replace(/[^a-zA-Z0-9]/g, '')}')">
+                <div class="file-path">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;opacity:0.7;">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    ${escapeHtml(file.filename)}
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="file-status ${statusClass}">${status}</span>
+                    <div class="file-stats">
+                        ${additions > 0 ? `<span class="additions">+${additions}</span>` : ''}
+                        ${deletions > 0 ? `<span class="deletions">-${deletions}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+            <div class="file-diff" id="diff-${file.filename.replace(/[^a-zA-Z0-9]/g, '')}">
+                ${file.patch ? formatDiff(file.patch) : '<p style="color:#94a3b8;padding:12px;">Binary file or no diff available</p>'}
+            </div>
+        </div>
+    `;
+}
+
+function formatDiff(patch) {
+    const lines = patch.split('\n');
+    return lines.map(line => {
+        let className = 'context';
+        let content = line;
+        
+        if (line.startsWith('+')) {
+            className = 'added';
+        } else if (line.startsWith('-')) {
+            className = 'deleted';
+        } else if (line.startsWith('@@')) {
+            className = 'context';
+            content = `<span style="color:#a78bfa">${escapeHtml(line)}</span>`;
+        }
+        
+        if (className !== 'context' && !line.startsWith('@@')) {
+            content = escapeHtml(line);
+        }
+        
+        return `<div class="diff-line ${className}">${content}</div>`;
+    }).join('');
+}
+
+function toggleFileDiff(fileId) {
+    const diffEl = document.getElementById(`diff-${fileId}`);
+    if (diffEl) {
+        diffEl.classList.toggle('expanded');
+    }
+}
+
+function closeCommitModal() {
+    document.getElementById('commit-modal').classList.remove('active');
+}
+
+function closeModalOnOverlay(event) {
+    if (event.target === event.currentTarget) {
+        closeCommitModal();
+    }
+}
+
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    const intervals = [
+        { label: 'd', seconds: 86400 },
+        { label: 'h', seconds: 3600 },
+        { label: 'm', seconds: 60 }
+    ];
+    for (const interval of intervals) {
+        const count = Math.floor(seconds / interval.seconds);
+        if (count >= 1) return `${count}${interval.label} ago`;
+    }
+    return 'just now';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(console.error);
+    });
+}
+
+init();
+</script>
+</body>
+</html>
