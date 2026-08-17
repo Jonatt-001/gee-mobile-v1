@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080b10">
+  <meta name="description" content="Sign in to Gee Mobile with GitHub and start building from your phone.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta property="og:title" content="Sign in to Gee Mobile">
+  <meta property="og:description" content="Connect GitHub and start building from mobile with Gee Mobile.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mobile.geefox.xyz/login/index.html">
+  <link rel="canonical" href="https://mobile.geefox.xyz/login/index.html">
+  <link rel="icon" href="./logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="/icons/180.png">
+  <title>Sign in - Gee Mobile</title>
+
+  <style>
+    :root {
+      --bg: #07090d;
+      --bg-soft: #0b0f15;
+      --surface: rgba(17, 22, 30, 0.82);
+      --surface-strong: #11161e;
+      --surface-hover: #171d26;
+      --line: rgba(255, 255, 255, 0.09);
+      --line-strong: rgba(255, 255, 255, 0.15);
+      --text: #f5f7fa;
+      --muted: #8993a2;
+      --muted-2: #5f6875;
+      --accent: #9dff5e;
+      --accent-2: #72e13b;
+      --danger: #ff6b78;
+      --shadow: 0 30px 90px rgba(0, 0, 0, 0.48);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      color-scheme: dark;
+      background: var(--bg);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100svh;
+      overflow-x: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% -10%, rgba(157, 255, 94, 0.10), transparent 30rem),
+        radial-gradient(circle at 0% 70%, rgba(80, 110, 255, 0.08), transparent 25rem),
+        linear-gradient(180deg, #090c11 0%, #07090d 100%);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      position: relative;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding:
+        max(24px, env(safe-area-inset-top))
+        18px
+        max(24px, env(safe-area-inset-bottom));
+      isolation: isolate;
+    }
+
+    .grid {
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      pointer-events: none;
+      opacity: 0.38;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 78%);
+      -webkit-mask-image: linear-gradient(to bottom, black, transparent 78%);
+    }
+
+    .orb {
+      position: fixed;
+      z-index: -2;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(70px);
+      opacity: 0.10;
+      background: var(--accent);
+      top: -170px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .shell {
+      width: min(100%, 1040px);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(10, 13, 18, 0.76);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(26px);
+      -webkit-backdrop-filter: blur(26px);
+    }
+
+    .brand-panel {
+      position: relative;
+      min-height: 620px;
+      padding: 34px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      border-right: 1px solid var(--line);
+      background:
+        radial-gradient(circle at 76% 25%, rgba(157,255,94,.10), transparent 18rem),
+        linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.008));
+    }
+
+    .brand-panel::after {
+      content: "";
+      position: absolute;
+      width: 460px;
+      height: 460px;
+      right: -240px;
+      bottom: -260px;
+      border: 1px solid rgba(157,255,94,.14);
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 55px rgba(157,255,94,.025),
+        0 0 0 110px rgba(157,255,94,.018);
+      pointer-events: none;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      width: fit-content;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255,255,255,.045);
+      box-shadow: inset 0 1px rgba(255,255,255,.06);
+    }
+
+    .brand-mark img {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+    }
+
+    .brand-name {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+    }
+
+    .brand-byline {
+      margin-top: 2px;
+      color: var(--muted-2);
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .visual {
+      position: relative;
+      z-index: 1;
+      max-width: 500px;
+      margin: auto 0;
+      padding: 56px 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border: 1px solid rgba(157,255,94,.17);
+      border-radius: 999px;
+      background: rgba(157,255,94,.06);
+      color: #c8fca9;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 14px rgba(157,255,94,.8);
+    }
+
+    .visual h1 {
+      max-width: 500px;
+      margin-top: 18px;
+      font-size: clamp(38px, 5vw, 68px);
+      line-height: .96;
+      letter-spacing: -.06em;
+    }
+
+    .visual h1 span {
+      color: var(--accent);
+    }
+
+    .visual p {
+      max-width: 470px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .capabilities {
+      display: grid;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .capability {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #b7c0cb;
+      font-size: 11px;
+    }
+
+    .capability-icon {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.025);
+      color: var(--accent);
+    }
+
+    .capability-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .panel-footer {
+      position: relative;
+      z-index: 2;
+      color: var(--muted-2);
+      font-size: 10px;
+    }
+
+    .panel-footer strong {
+      color: #9da7b4;
+    }
+
+    .auth-panel {
+      min-height: 620px;
+      display: flex;
+      align-items: center;
+      padding: 34px;
+      background: rgba(9, 12, 17, 0.88);
+    }
+
+    .auth {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    .mobile-brand {
+      display: none;
+    }
+
+    .auth-head h2 {
+      font-size: 28px;
+      letter-spacing: -.045em;
+    }
+
+    .auth-head p {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .github-button {
+      width: 100%;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      margin-top: 26px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 14px;
+      background: #f4f6f8;
+      color: #090b0f;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .github-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 38px rgba(0,0,0,.32);
+      background: #fff;
+    }
+
+    .github-button:active {
+      transform: translateY(0);
+    }
+
+    .github-button svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .security {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin-top: 15px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.022);
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .security svg {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 auto;
+      margin-top: 1px;
+      color: var(--accent);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 23px 0;
+      color: var(--muted-2);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: var(--line);
+    }
+
+    .status {
+      display: none;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,107,120,.20);
+      background: rgba(255,107,120,.06);
+      color: #ffabb3;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 25px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      transition: color .2s ease;
+    }
+
+    .back:hover {
+      color: var(--text);
+    }
+
+    .back svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .legal {
+      margin-top: 25px;
+      color: var(--muted-2);
+      font-size: 9px;
+      line-height: 1.6;
+    }
+
+    .legal a {
+      color: #8994a2;
+      text-decoration: underline;
+      text-decoration-color: rgba(255,255,255,.15);
+      text-underline-offset: 3px;
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      background: rgba(7,9,13,.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .2s ease, visibility .2s ease;
+    }
+
+    .loading.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .loader {
+      width: 42px;
+      height: 42px;
+      border: 2px solid rgba(255,255,255,.12);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 780px) {
+      .page {
+        padding: 16px;
+      }
+
+      .shell {
+        display: block;
+        max-width: 480px;
+        border-radius: 23px;
+      }
+
+      .brand-panel {
+        display: none;
+      }
+
+      .auth-panel {
+        min-height: auto;
+        padding: 25px 20px 24px;
+      }
+
+      .mobile-brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 46px;
+      }
+
+      .mobile-brand .brand {
+        gap: 9px;
+      }
+
+      .mobile-brand .brand-mark {
+        width: 38px;
+        height: 38px;
+      }
+
+      .mobile-brand .brand-mark img {
+        width: 27px;
+        height: 27px;
+      }
+
+      .mobile-home {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .auth {
+        max-width: none;
+      }
+
+      .auth-head h2 {
+        font-size: 27px;
+      }
+
+      .github-button {
+        min-height: 56px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="grid" aria-hidden="true"></div>
+    <div class="orb" aria-hidden="true"></div>
+
+    <section class="shell" aria-label="Gee Mobile sign in">
+      <aside class="brand-panel">
+        <a class="brand" href="/" aria-label="Gee Mobile home">
+          <span class="brand-mark">
+            <img src="logo.png" alt="" width="30" height="30">
+          </span>
+          <span>
+            <span class="brand-name">Gee Mobile</span>
+            <span class="brand-byline">by GeeFox</span>
+          </span>
+        </a>
+
+        <div class="visual">
+          <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            Mobile developer workspace
+          </div>
+
+          <h1>Build from<br><span>wherever you are.</span></h1>
+
+          <p>
+            Connect GitHub and bring your repositories, code, assets, commits,
+            and developer workflow into a workspace designed for your phone.
+          </p>
+
+          <div class="capabilities">
+            <div class="capability">
+              <span class="capability-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                  <polyline points="10 17 15 12 10 7"/>
+                  <line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+              </span>
+              Sign in with your existing GitHub account
+            </div>
+
+            <div class="capability">
+              <span class="capability-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M12 3v18M3 12h18"/>
+                </svg>
+              </span>
+              No separate Gee Mobile password to remember
+            </div>
+
+            <div class="capability">
+              <span class="capability-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <rect x="5" y="10" width="14" height="10" rx="2"/>
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                </svg>
+              </span>
+              GitHub OAuth keeps authentication on GitHub
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-footer">
+          <strong>Gee Mobile</strong> · A GeeFox developer product
+        </div>
+      </aside>
+
+      <section class="auth-panel">
+        <div class="auth">
+          <div class="mobile-brand">
+            <a class="brand" href="/" aria-label="Gee Mobile home">
+              <span class="brand-mark">
+                <img src="/logo.png" alt="" width="27" height="27">
+              </span>
+              <span>
+                <span class="brand-name">Gee Mobile</span>
+                <span class="brand-byline">by GeeFox</span>
+              </span>
+            </a>
+            <a class="mobile-home" href="/">Back home</a>
+          </div>
+
+          <header class="auth-head">
+            <h2>Welcome to Gee Mobile</h2>
+            <p>Sign in with GitHub to access your mobile development workspace.</p>
+          </header>
+
+          <div class="status" id="status" role="alert" aria-live="polite"></div>
+
+          <button class="github-button" id="githubLogin" type="button">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 5.303 3.438 9.801 8.205 11.385.6.111.82-.26.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.334-1.756-1.334-1.756-1.089-.745.084-.729.084-.729 1.205.084 1.838 1.237 1.838 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-2.657 0-.588.21-1.073.574-1.446-.058-.143-.249-.743.054-1.55 0 0 .468-.15 1.54.57a5.3 5.3 0 0 1 2.798-.75c.95.004 1.906.129 2.797.75 1.07-.72 1.538-.57 1.538-.57.303.807.112 1.407.055 1.55.365.373.574.858.574 1.446 0 1.321-.008 2.387-.012 2.71.314.34.603 1.012.603 2.043v3.025c0 .317.216.692.825.574C20.565 21.796 24 17.3 24 12 24 5.373 18.627 0 12 0Z"/>
+            </svg>
+            Continue with GitHub
+          </button>
+
+          <div class="security">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="10" rx="2"/>
+              <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+            </svg>
+            <span>You'll be redirected to GitHub to authorize Gee Mobile. Your GitHub password is never entered into Gee Mobile.</span>
+          </div>
+
+          <div class="divider">Secure GitHub authentication</div>
+
+          <a class="back" href="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M19 12H5"/>
+              <path d="m12 19-7-7 7-7"/>
+            </svg>
+            Back to Gee Mobile
+          </a>
+
+          <p class="legal">
+            By continuing, you agree to Gee Mobile's
+            <a href="./terms-condition.html">Terms</a>
+            and
+            <a href="./privacy-policy.html">Privacy Policy</a>.
+          </p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="loading" id="loading" aria-hidden="true">
+    <div class="loader" aria-label="Connecting to GitHub"></div>
+  </div>
+
+  <script>
+    (() => {
+      const loginButton = document.getElementById("githubLogin");
+      const loading = document.getElementById("loading");
+      const status = document.getElementById("status");
+
+      const errors = {
+        invalid_callback: "The GitHub sign-in callback was incomplete. Please try again.",
+        invalid_state: "The sign-in session expired or could not be verified. Please try again.",
+        oauth_failed: "GitHub sign-in could not be completed. Please try again.",
+        access_denied: "GitHub access was cancelled. You can try again whenever you're ready."
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get("error");
+
+      if (error) {
+        status.textContent = errors[error] || "We couldn't complete GitHub sign-in. Please try again.";
+        status.classList.add("show");
+      }
+
+      loginButton.addEventListener("click", () => {
+        loginButton.disabled = true;
+        loginButton.textContent = "Connecting to GitHub...";
+        loading.classList.add("show");
+        loading.setAttribute("aria-hidden", "false");
+        window.location.assign("/api/login");
+      });
+    })();
+  </script>
+</body>
+</html>
