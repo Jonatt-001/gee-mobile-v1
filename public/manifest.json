@@ -1,0 +1,22 @@
+{
+  "name": "Gee Mobile - Mobile Developer Workspace",
+  "short_name": "Gee Mobile",
+  "description": "A mobile-first developer workspace by GeeFox for building, inspecting, editing, deploying and managing software projects from your phone.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07090d",
+  "theme_color": "#080b10",
+  "icons": [
+    {
+      "src": "/icons/192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
