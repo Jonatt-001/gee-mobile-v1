@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>GFox Git ~ Starred Repositories</title>
+    <link rel="stylesheet" href="geefox.css">
+    <style>
+        :root {
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
+        }
+        body {
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overscroll-behavior-y: contain;
+            margin: 0;
+            padding-bottom: 100px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: max(16px, var(--safe-area-top)) 20px 20px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 {
+            flex: 1;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f1f5f9;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .header-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .repo-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .repo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+        .repo-card:active {
+            transform: scale(0.98);
+        }
+        .repo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+        .repo-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .repo-description {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        .repo-meta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .unstar-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .unstar-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+        .unstar-btn:active {
+            transform: scale(0.92);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(251, 191, 36, 0.2);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <button class="header-btn" onclick="window.history.back()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+    </button>
+    <h1>
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:24px;height:24px;color:#fbbf24;">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Starred Repositories
+    </h1>
+    <button class="header-btn" onclick="loadStarredRepos()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+        </svg>
+    </button>
+</div>
+
+<div class="container">
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-value" id="total-starred">0</div>
+            <div class="stat-label">Starred Repos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="total-stars">0</div>
+            <div class="stat-label">Total Stars</div>
+        </div>
+    </div>
+    
+    <div id="starred-list">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading starred repositories...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const safeStorage = {
+    get: (key, fallback = null) => {
+        try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : fallback;
+        } catch (e) { return fallback; }
+    },
+    set: (key, value) => {
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+    }
+};
+
+let state = { owner: '', token: '', starredRepos: [] };
+
+async function init() {
+    try {
+        const res = await fetch('/api/token', { credentials: 'include' });
+        if (!res.ok) throw new Error('Auth failed');
+        const data = await res.json();
+        state.token = data.token;
+        
+        const userRes = await fetch(`https://api.github.com/user`, { 
+            headers: { 'Authorization': `token ${state.token}` } 
+        });
+        const userData = await userRes.json();
+        state.owner = userData.login;
+    } catch (err) {
+        window.location.href = 'index.html';
+        return;
+    }
+    
+    loadStarredRepos();
+}
+
+async function githubAPI(endpoint, options = {}) {
+    const url = `https://api.github.com${endpoint}`;
+    const headers = { 
+        'Authorization': `token ${state.token}`, 
+        'Accept': 'application/vnd.github.v3+json', 
+        ...options.headers 
+    };
+    const response = await fetch(url, { ...options, headers });
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || `GitHub API error: ${response.status}`);
+    }
+    return response;
+}
+
+async function loadStarredRepos() {
+    const list = document.getElementById('starred-list');
+    state.starredRepos = safeStorage.get('starred_repos', []);
+    
+    if (state.starredRepos.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <h3>No starred repositories yet</h3>
+                <p style="margin-top:8px;font-size:14px;">Star repositories to see them here</p>
+                <button onclick="window.location.href='index.html'" style="margin-top:20px;padding:12px 24px;background:linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);color:white;border:none;border-radius:12px;cursor:pointer;font-weight:600;">Browse Repositories</button>
+            </div>
+        `;
+        document.getElementById('total-starred').textContent = '0';
+        document.getElementById('total-stars').textContent = '0';
+        return;
+    }
+    
+    list.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading starred repositories...</p></div>';
+    
+    try {
+        const repos = [];
+        let totalStars = 0;
+        
+        for (const repoFullName of state.starredRepos) {
+            try {
+                const res = await githubAPI(`/repos/${repoFullName}`);
+                const repo = await res.json();
+                repos.push(repo);
+                totalStars += repo.stargazers_count;
+            } catch (e) {
+                console.error(`Failed to load ${repoFullName}:`, e);
+            }
+        }
+        
+        document.getElementById('total-starred').textContent = repos.length;
+        document.getElementById('total-stars').textContent = totalStars.toLocaleString();
+        
+        if (repos.length === 0) {
+            list.innerHTML = '<div class="empty-state"><p>No repositories found</p></div>';
+            return;
+        }
+        
+        list.innerHTML = repos.map(repo => `
+            <div class="repo-card" onclick="openRepo('${repo.name}', '${repo.default_branch}')">
+                <div class="repo-header">
+                    <div style="flex:1;">
+                        <div class="repo-name">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            ${repo.name}
+                            <span style="font-size:11px;color:${repo.private ? '#ef4444' : '#10b981'};padding:2px 8px;border-radius:6px;border:1px solid ${repo.private ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'};">
+                                ${repo.private ? 'Private' : 'Public'}
+                            </span>
+                        </div>
+                    </div>
+                    <button class="unstar-btn" onclick="event.stopPropagation(); unstarRepo('${repo.full_name}')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Unstar
+                    </button>
+                </div>
+                <div class="repo-description">${repo.description || 'No description'}</div>
+                <div class="repo-meta">
+                    <div class="meta-item">
+                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:14px;height:14px;color:#fbbf24;">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        ${repo.stargazers_count}
+                    </div>
+                    <div class="meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                            <circle cx="12" cy="18" r="3"/>
+                            <circle cx="6" cy="6" r="3"/>
+                            <circle cx="18" cy="6" r="3"/>
+                            <path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"/>
+                            <line x1="12" y1="12" x2="12" y2="15"/>
+                        </svg>
+                        ${repo.forks_count}
+                    </div>
+                    ${repo.language ? `
+                    <div class="meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                            <polyline points="16 18 22 12 16 6"/>
+                            <polyline points="8 6 2 12 8 18"/>
+                        </svg>
+                        ${repo.language}
+                    </div>
+                    ` : ''}
+                    <div class="meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        ${timeAgo(repo.updated_at)}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        list.innerHTML = `<div class="empty-state"><p style="color:#ef4444;">Error: ${err.message}</p><button onclick="loadStarredRepos()" style="margin-top:16px;padding:8px 16px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;">Retry</button></div>`;
+    }
+}
+
+function unstarRepo(repoFullName) {
+    let starredRepos = safeStorage.get('starred_repos', []);
+    starredRepos = starredRepos.filter(r => r !== repoFullName);
+    safeStorage.set('starred_repos', starredRepos);
+    loadStarredRepos();
+}
+
+function openRepo(repoName, branch) {
+    window.location.href = `explorer.html?repo=${encodeURIComponent(repoName)}&branch=${encodeURIComponent(branch)}`;
+}
+
+function timeAgo(dateStr) {
+    const seconds = Math.floor((new Date() - new Date(dateStr)) / 1000);
+    const intervals = [
+        { label: 'd', seconds: 86400 },
+        { label: 'h', seconds: 3600 },
+        { label: 'm', seconds: 60 }
+    ];
+    for (const interval of intervals) {
+        const count = Math.floor(seconds / interval.seconds);
+        if (count >= 1) return `${count}${interval.label} ago`;
+    }
+    return 'just now';
+}
+
+init();
+</script>
+</body>
+</html>
