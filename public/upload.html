@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Upload Files • GFox Git</title>
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GFox Git">
+    <meta name="description" content="Upload files to GitHub repositories">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiR0ZveCBHaXQiLCJzaG9ydF9uYW1lIjoiR0ZveEdpdCIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMGYxNzJhIiwidGhlbWVfY29sb3IiOiIjM2I4MmY2IiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCw8c3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDE5MiAxOTInPjxyZWN0IHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyByeD0nNDAnIGZpbGw9JyMzYjgyZjYnLz48dGV4dCB4PSc5NicgeT0nMTIwJyBmb250LXNpemU9JzgwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBmaWxsPSd3aGl0ZScgZm9udC1mYW1pbHk9J0FyaWFsJz5HRjwvdGV4dD48L3N2Zz4iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #60a5fa;
+            --primary-50: rgba(59, 130, 246, 0.1);
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-2: #334155;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #334155;
+            --border-light: #475569;
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --error: #ef4444;
+            --error-bg: rgba(239, 68, 68, 0.1);
+            --warning: #f59e0b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --nav-height: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overscroll-behavior: none;
+            touch-action: manipulation;
+        }
+
+        /* ===== APP SHELL ===== */
+        .app {
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: calc(12px + var(--safe-top)) 16px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-btn:active {
+            transform: scale(0.92);
+            background: rgba(255,255,255,0.25);
+        }
+
+        .header-btn svg {
+            width: 20px;
+            height: 20px;
+            color: white;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .header-title svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .header-spacer {
+            width: 36px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px;
+            padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 16px);
+        }
+
+        .main-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .main-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header svg {
+            width: 24px;
+            height: 24px;
+            color: var(--primary);
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        /* ===== FORM SECTIONS ===== */
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 10px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            gap: 12px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* ===== INPUTS ===== */
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-row input {
+            flex: 1;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text);
+            transition: all 0.2s;
+            outline: none;
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-50);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text-muted);
+        }
+
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 44px;
+        }
+
+        select option {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .hint {
+            display: block;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-primary:disabled:active {
+            transform: none;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--surface-2);
+            color: var(--text);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+        }
+
+        .btn-ghost:hover {
+            color: var(--error);
+            background: var(--error-bg);
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ===== DROP ZONE ===== */
+        .drop-zone {
+            border: 2px dashed var(--border-light);
+            border-radius: 16px;
+            padding: 40px 24px;
+            text-align: center;
+            background: var(--bg);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .drop-zone:active {
+            transform: scale(0.98);
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .drop-zone svg {
+            width: 44px;
+            height: 44px;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .drop-zone p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* ===== FILE LIST ===== */
+        .file-list-section {
+            margin-top: 20px;
+        }
+
+        .file-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .file-list-header h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .file-list-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        /* Bulk actions bar */
+        .bulk-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--error-bg);
+            border: 1px solid var(--error);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .bulk-bar.active {
+            display: flex;
+        }
+
+        .bulk-bar span {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--error);
+        }
+
+        .bulk-bar-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Scrollable file list container */
+        .file-list-scroll {
+            max-height: 320px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+        }
+
+        .file-list-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .file-list-scroll::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 4px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-item:active {
+            background: var(--surface);
+        }
+
+        .file-item.selected {
+            background: var(--primary-50);
+            border-left: 3px solid var(--primary);
+            padding-left: 11px;
+        }
+
+        .file-item.deleting {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        @keyframes slideOut {
+            to {
+                opacity: 0;
+                transform: translateX(-100%);
+                max-height: 0;
+                padding: 0 14px;
+                overflow: hidden;
+            }
+        }
+
+        .file-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .file-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--primary-light);
+            flex-shrink: 0;
+        }
+
+        .file-name {
+            flex: 1;
+            font-size: 13px;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .file-delete {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .file-delete:active {
+            background: var(--error-bg);
+            color: var(--error);
+            transform: scale(0.9);
+        }
+
+        .file-delete svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ===== UPLOAD BUTTON ===== */
+        .upload-action {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-upload {
+            width: 100%;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: inherit;
+        }
+
+        .btn-upload:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn-upload:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: var(--surface-2);
+            box-shadow: none;
+        }
+
+        .btn-upload svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ===== PROGRESS OVERLAY ===== */
+        .progress-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .progress-overlay.active {
+            display: flex;
+        }
+
+        .progress-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 28px 24px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .progress-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .progress-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .progress-file {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-family: 'SF Mono', monospace;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            top: calc(16px + var(--safe-top));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3000;
+            width: calc(100% - 32px);
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--surface);
+            color: var(--text);
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            animation: toastIn 0.3s ease;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--error); }
+        .toast.warning { border-left-color: var(--warning); }
+
+        .toast.removing {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes toastOut {
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 8px 16px calc(8px + var(--safe-bottom));
+            border-top: 1px solid var(--border);
+            z-index: 1000;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 4px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .nav-item:active {
+            transform: scale(0.92);
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .card {
+                padding: 16px;
+                border-radius: 16px;
+            }
+
+            .input-row {
+                flex-direction: column;
+            }
+
+            .file-list-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .bulk-bar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .bulk-bar-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+
+        /* ===== LIGHT MODE ===== */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f8fafc;
+                --surface: #ffffff;
+                --surface-2: #f1f5f9;
+                --text: #1e293b;
+                --text-secondary: #64748b;
+                --text-muted: #94a3b8;
+                --border: #e2e8f0;
+                --border-light: #cbd5e1;
+            }
+
+            .bottom-nav {
+                background: rgba(255, 255, 255, 0.95);
+            }
+
+            .file-list-scroll {
+                background: var(--surface-2);
+            }
+
+            .drop-zone {
+                background: var(--surface-2);
+            }
+
+            input[type="text"],
+            select {
+                background: var(--surface-2);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <!-- HEADER -->
+    <header class="header">
+        <button class="header-btn" onclick="goBack()" aria-label="Back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="header-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Files
+        </div>
+        <div class="header-spacer"></div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="main-content">
+        <div class="card">
+            <div class="card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <h2>Upload to GitHub Repository</h2>
+            </div>
+
+            <!-- Repo Link -->
+            <div class="section">
+                <label class="section-label">Repository Link (Optional)</label>
+                <div class="input-row">
+                    <input type="text" id="repo-link" placeholder="https://github.com/username/repo-name" autocomplete="off">
+                    <button class="btn btn-primary" onclick="loadRepoFromLink()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                        Load
+                    </button>
+                </div>
+                <span class="hint">Paste your GitHub repo URL if it's not in the dropdown</span>
+            </div>
+
+            <div class="divider"><span>OR SELECT FROM YOUR REPOS</span></div>
+
+            <!-- Repo Select -->
+            <div class="section">
+                <select id="repo-select" onchange="handleRepoSelect()">
+                    <option value="">Select a repository...</option>
+                </select>
+                <span class="hint">Shows both private & public repos</span>
+            </div>
+
+            <!-- Target Path -->
+            <div class="section">
+                <label class="section-label">Target Path (Optional)</label>
+                <input type="text" id="target-path" placeholder="e.g., src/components/" autocomplete="off">
+            </div>
+
+            <!-- File Selection -->
+            <div class="section">
+                <label class="section-label">Select Files</label>
+                <div class="drop-zone" id="drop-zone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <p>Tap to select .zip file</p>
+                    <input type="file" id="file-input" accept=".zip">
+                </div>
+
+                <!-- File List -->
+                <div class="file-list-section" id="file-list-section" style="display: none;">
+                    <div class="file-list-header">
+                        <h4 id="file-count">0 file(s) selected</h4>
+                        <div class="file-list-actions">
+                            <button class="btn btn-secondary btn-sm" id="btn-select-all" onclick="toggleSelectAll()">Select All</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteAllFiles()">Delete All</button>
+                        </div>
+                    </div>
+
+                    <div class="bulk-bar" id="bulk-bar">
+                        <span id="bulk-count">0 selected</span>
+                        <div class="bulk-bar-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="deselectAll()">Cancel</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteSelected()">Delete Selected</button>
+                        </div>
+                    </div>
+
+                    <div class="file-list-scroll" id="file-list-scroll"></div>
+                </div>
+            </div>
+
+            <!-- Upload Button -->
+            <div class="upload-action">
+                <button class="btn-upload" id="upload-btn" onclick="pushFiles()" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                    Push to GitHub
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- PROGRESS OVERLAY -->
+    <div class="progress-overlay" id="progress-overlay">
+        <div class="progress-card">
+            <div class="progress-header">
+                <div class="progress-spinner"></div>
+                <div class="progress-title" id="progress-title">Uploading...</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-info">
+                <span id="progress-percent">0%</span>
+                <span id="progress-count">0/0 files</span>
+            </div>
+            <div class="progress-file" id="progress-file">Preparing...</div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="private/index.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span>Private Repo</span>
+            </a>
+            <a href="settings.html" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Settings</span>
+            </a>
+        </div>
+    </nav>
+</div>
+
+<script>
+// ===== STATE =====
+const state = {
+    owner: '',
+    token: '',
+    repos: [],
+    files: [],
+    selectedIds: new Set(),
+    customRepo: null,
+    selectedRepo: null,
+    isUploading: false
+};
+
+// ===== ICONS =====
+const ICONS = {
+    folder: '<svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>'
+};
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+    setupDropZone();
+    init();
+});
+
+async function init() {
+    try {
+        const res = await fetch('/api/token', { credentials: 'include' });
+        if (!res.ok) throw new Error('Not authenticated');
+        const data = await res.json();
+        state.token = data.token;
+        await loadUser();
+    } catch (err) {
+        toast('Please login first', 'error');
+        setTimeout(() => window.location.href = 'index.html', 2000);
+    }
+}
+
+async function loadUser() {
+    try {
+        const res = await githubAPI('/user');
+        const user = await res.json();
+        state.owner = user.login;
+        toast(`Welcome, ${state.owner}!`, 'success');
+        await loadRepos();
+    } catch (err) {
+        if (err.message.includes('401')) {
+            toast('Session expired. Please login again.', 'error');
+            setTimeout(() => window.location.href = 'index.html', 2000);
+        } else {
+            toast(`Error: ${err.message}`, 'error');
+        }
+    }
+}
+
+async function loadRepos() {
+    try {
+        const res = await githubAPI(`/users/${state.owner}/repos?sort=updated&per_page=100`);
+        state.repos = await res.json();
+        populateRepoSelect();
+    } catch (err) {
+        toast(`Error loading repos: ${err.message}`, 'error');
+    }
+}
+
+async function githubAPI(endpoint, options = {}) {
+    const url = `https://api.github.com${endpoint}`;
+    const headers = {
+        'Authorization': `token ${state.token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+        ...options.headers
+    };
+    const response = await fetch(url, { ...options, headers });
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || `API error: ${response.status}`);
+    }
+    return response;
+}
+
+function populateRepoSelect() {
+    const select = document.getElementById('repo-select');
+    select.innerHTML = '<option value="">Select a repository...</option>' +
+        state.repos.map(r => {
+            const icon = r.private ? '🔒' : '🌍';
+            return `<option value="${r.name}">${icon} ${r.name}</option>`;
+        }).join('');
+}
+
+// ===== DROP ZONE =====
+function setupDropZone() {
+    const zone = document.getElementById('drop-zone');
+    const input = document.getElementById('file-input');
+
+    zone.addEventListener('click', (e) => {
+        if (e.target === input) return;
+        input.click();
+    });
+
+    zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.classList.add('dragover');
+    });
+
+    zone.addEventListener('dragleave', () => {
+        zone.classList.remove('dragover');
+    });
+
+    zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+            handleZipUpload(e.dataTransfer.files);
+        }
+    });
+
+    input.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleZipUpload(e.target.files);
+        }
+    });
+}
+
+// ===== ZIP HANDLING =====
+async function handleZipUpload(files) {
+    const file = files[0];
+    if (!file || !file.name.toLowerCase().endsWith('.zip')) {
+        return toast('Please select a .zip file', 'error');
+    }
+
+    toast(`Processing ${file.name}...`, 'info');
+
+    try {
+        const zip = await JSZip.loadAsync(file);
+        state.files = [];
+        state.selectedIds.clear();
+        const targetPath = document.getElementById('target-path').value.trim();
+
+        zip.forEach((relativePath, zipEntry) => {
+            if (zipEntry.dir) return;
+            if (relativePath.startsWith('__MACOSX')) return;
+            if (relativePath.includes('.DS_Store')) return;
+            
+            const parts = relativePath.split('/');
+            if (parts.length > 1) parts.shift();
+            
+            state.files.push({
+                id: Date.now() + Math.random(),
+                path: targetPath ? `${targetPath}/${parts.join('/')}` : parts.join('/'),
+                entry: zipEntry
+            });
+        });
+
+        renderFileList();
+        toast(`${state.files.length} files ready to upload`, 'success');
+    } catch (err) {
+        toast(`Failed to process zip: ${err.message}`, 'error');
+    }
+}
+
+// ===== FILE LIST RENDERING =====
+function renderFileList() {
+    const section = document.getElementById('file-list-section');
+    const scroll = document.getElementById('file-list-scroll');
+    const countEl = document.getElementById('file-count');
+    const selectAllBtn = document.getElementById('btn-select-all');
+    const bulkBar = document.getElementById('bulk-bar');
+    const bulkCount = document.getElementById('bulk-count');
+    const uploadBtn = document.getElementById('upload-btn');
+
+    if (state.files.length === 0) {
+        section.style.display = 'none';
+        uploadBtn.disabled = true;
+        return;
+    }
+
+    section.style.display = 'block';
+    countEl.textContent = `${state.files.length} file(s) selected`;
+    uploadBtn.disabled = false;
+
+    // Select all button text
+    const allSelected = state.selectedIds.size === state.files.length;
+    selectAllBtn.textContent = allSelected ? 'Deselect All' : 'Select All';
+
+    // Bulk bar
+    if (state.selectedIds.size > 0) {
+        bulkBar.classList.add('active');
+        bulkCount.textContent = `${state.selectedIds.size} selected`;
+    } else {
+        bulkBar.classList.remove('active');
+    }
+
+    // Render all files
+    scroll.innerHTML = state.files.map(file => {
+        const isSelected = state.selectedIds.has(file.id);
+        return `
+            <div class="file-item ${isSelected ? 'selected' : ''}" data-id="${file.id}">
+                <input type="checkbox" class="file-checkbox" 
+                       ${isSelected ? 'checked' : ''} 
+                       onchange="toggleFile(${file.id})"
+                       aria-label="Select ${file.path}">
+                ${ICONS.folder}
+                <span class="file-name" title="${file.path}">${file.path}</span>
+                <button class="file-delete" onclick="deleteFile(${file.id})" aria-label="Delete ${file.path}">
+                    ${ICONS.trash}
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+// ===== SELECTION =====
+function toggleFile(id) {
+    if (state.selectedIds.has(id)) {
+        state.selectedIds.delete(id);
+    } else {
+        state.selectedIds.add(id);
+    }
+    renderFileList();
+}
+
+function toggleSelectAll() {
+    if (state.selectedIds.size === state.files.length) {
+        state.selectedIds.clear();
+    } else {
+        state.files.forEach(f => state.selectedIds.add(f.id));
+    }
+    renderFileList();
+}
+
+function deselectAll() {
+    state.selectedIds.clear();
+    renderFileList();
+}
+
+// ===== DELETE =====
+function deleteFile(id) {
+    const el = document.querySelector(`[data-id="${id}"]`);
+    if (el) {
+        el.classList.add('deleting');
+        setTimeout(() => {
+            state.files = state.files.filter(f => f.id !== id);
+            state.selectedIds.delete(id);
+            renderFileList();
+            toast('File removed', 'success');
+        }, 280);
+    }
+}
+
+function deleteSelected() {
+    const count = state.selectedIds.size;
+    if (count === 0) return;
+
+    const els = document.querySelectorAll('.file-item.selected');
+    els.forEach((el, i) => {
+        setTimeout(() => el.classList.add('deleting'), i * 30);
+    });
+
+    setTimeout(() => {
+        state.files = state.files.filter(f => !state.selectedIds.has(f.id));
+        state.selectedIds.clear();
+        renderFileList();
+        toast(`${count} file(s) removed`, 'success');
+    }, 300 + (els.length * 30));
+}
+
+function deleteAllFiles() {
+    if (state.files.length === 0) return;
+    const count = state.files.length;
+
+    const els = document.querySelectorAll('.file-item');
+    els.forEach((el, i) => {
+        setTimeout(() => el.classList.add('deleting'), i * 20);
+    });
+
+    setTimeout(() => {
+        state.files = [];
+        state.selectedIds.clear();
+        document.getElementById('file-input').value = '';
+        renderFileList();
+        toast(`All ${count} files removed`, 'success');
+    }, 300 + (els.length * 20));
+}
+
+// ===== REPO HANDLING =====
+function loadRepoFromLink() {
+    const url = document.getElementById('repo-link').value.trim();
+    if (!url) return toast('Please enter a GitHub repository URL', 'error');
+
+    const info = parseGitHubUrl(url);
+    if (!info) return toast('Invalid GitHub URL', 'error');
+
+    verifyRepoAccess(info.owner, info.name);
+}
+
+function parseGitHubUrl(url) {
+    const patterns = [
+        /github\.com[\/:]([^\/]+)\/([^\/\s]+?)(?:\.git)?(?:\/)?$/,
+        /^([^\/]+)\/([^\/\s]+?)(?:\.git)?$/
+    ];
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) return { owner: match[1], name: match[2].replace(/\.git$/, '') };
+    }
+    return null;
+}
+
+async function verifyRepoAccess(owner, repoName) {
+    showProgress('Verifying...', 0, 'Checking repository access');
+
+    try {
+        const repo = await (await githubAPI(`/repos/${owner}/${repoName}`)).json();
+        
+        try {
+            const perm = await (await githubAPI(`/repos/${owner}/${repoName}/collaborators/${state.owner}/permission`)).json();
+            if (perm.permission === 'read') {
+                hideProgress();
+                return toast('Read-only access. Cannot push to this repo.', 'error');
+            }
+        } catch (e) {}
+
+        state.customRepo = {
+            name: repo.name,
+            full_name: repo.full_name,
+            owner: repo.owner.login,
+            private: repo.private,
+            default_branch: repo.default_branch
+        };
+
+        hideProgress();
+        toast(`✓ Loaded: ${repo.full_name}`, 'success');
+        document.getElementById('repo-select').value = '';
+        document.getElementById('repo-link').style.borderColor = 'var(--success)';
+        setTimeout(() => { document.getElementById('repo-link').style.borderColor = ''; }, 2000);
+    } catch (err) {
+        hideProgress();
+        if (err.message.includes('404')) toast('Repository not found', 'error');
+        else if (err.message.includes('401')) toast('Authentication failed', 'error');
+        else toast(`Error: ${err.message}`, 'error');
+    }
+}
+
+function handleRepoSelect() {
+    const value = document.getElementById('repo-select').value;
+    if (value) {
+        state.customRepo = null;
+        state.selectedRepo = state.repos.find(r => r.name === value);
+        document.getElementById('repo-link').value = '';
+        document.getElementById('repo-link').style.borderColor = '';
+    } else {
+        state.selectedRepo = null;
+    }
+}
+
+// ===== UPLOAD =====
+async function pushFiles() {
+    if (state.isUploading) return;
+
+    let repoName = document.getElementById('repo-select').value;
+    let repoOwner = state.owner;
+    let branch = 'main';
+
+    if (state.customRepo) {
+        repoName = state.customRepo.name;
+        repoOwner = state.customRepo.owner;
+        branch = state.customRepo.default_branch;
+    } else if (state.selectedRepo) {
+        repoName = state.selectedRepo.name;
+        branch = state.selectedRepo.default_branch;
+    } else if (!repoName) {
+        return toast('Please select a repository', 'error');
+    }
+
+    state.isUploading = true;
+    const uploadBtn = document.getElementById('upload-btn');
+    uploadBtn.disabled = true;
+
+    showProgress('Starting...', 0, 'Preparing upload');
+
+    try {
+        const total = state.files.length;
+
+        for (let i = 0; i < total; i++) {
+            const file = state.files[i];
+            const percent = ((i + 1) / total) * 100;
+            updateProgress(percent, i + 1, total, file.path);
+
+            const base64 = await file.entry.async('base64');
+
+            let sha = null;
+            try {
+                const existing = await (await githubAPI(`/repos/${repoOwner}/${repoName}/contents/${encodeURIComponent(file.path)}?ref=${branch}`)).json();
+                sha = existing.sha;
+            } catch (e) {}
+
+            const body = {
+                message: `Upload ${file.path} via GFox Git`,
+                content: base64,
+                branch: branch
+            };
+            if (sha) body.sha = sha;
+
+            await githubAPI(`/repos/${repoOwner}/${repoName}/contents/${encodeURIComponent(file.path)}`, {
+                method: 'PUT',
+                body: JSON.stringify(body)
+            });
+
+            // Rate limit friendly delay
+            await new Promise(r => setTimeout(r, 100));
+        }
+
+        hideProgress();
+        toast(`✓ ${total} files uploaded to ${repoName}!`, 'success');
+
+        // Reset
+        state.files = [];
+        state.selectedIds.clear();
+        state.customRepo = null;
+        state.selectedRepo = null;
+        document.getElementById('file-input').value = '';
+        document.getElementById('repo-link').value = '';
+        document.getElementById('repo-select').value = '';
+        document.getElementById('target-path').value = '';
+        renderFileList();
+
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2000);
+
+    } catch (err) {
+        hideProgress();
+        toast(`Upload failed: ${err.message}`, 'error');
+        state.isUploading = false;
+        uploadBtn.disabled = state.files.length === 0;
+    }
+}
+
+// ===== PROGRESS =====
+function showProgress(title, percent, file) {
+    document.getElementById('progress-overlay').classList.add('active');
+    document.getElementById('progress-title').textContent = title;
+    document.getElementById('progress-fill').style.width = `${percent}%`;
+    document.getElementById('progress-percent').textContent = `${Math.round(percent)}%`;
+    document.getElementById('progress-file').textContent = file;
+}
+
+function updateProgress(percent, current, total, file) {
+    document.getElementById('progress-fill').style.width = `${percent}%`;
+    document.getElementById('progress-percent').textContent = `${Math.round(percent)}%`;
+    document.getElementById('progress-count').textContent = `${current}/${total} files`;
+    document.getElementById('progress-file').textContent = file;
+}
+
+function hideProgress() {
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('progress-percent').textContent = '100%';
+    setTimeout(() => {
+        document.getElementById('progress-overlay').classList.remove('active');
+        document.getElementById('progress-fill').style.width = '0%';
+    }, 500);
+}
+
+// ===== TOAST =====
+function toast(msg, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    container.appendChild(el);
+
+    setTimeout(() => {
+        el.classList.add('removing');
+        setTimeout(() => el.remove(), 300);
+    }, 3500);
+}
+
+// ===== NAV =====
+function goBack() {
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = 'index.html';
+    }
+}
+
+// ===== PWA SERVICE WORKER =====
+if ('serviceWorker' in navigator) {
+    const swCode = `
+        self.addEventListener('install', e => self.skipWaiting());
+        self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+        self.addEventListener('fetch', e => {
+            if (e.request.method !== 'GET') return;
+            e.respondWith(
+                caches.open('gfox-v1').then(cache =>
+                    cache.match(e.request).then(cached => {
+                        const fetchPromise = fetch(e.request).then(response => {
+                            if (response && response.status === 200) {
+                                cache.put(e.request, response.clone());
+                            }
+                            return response;
+                        }).catch(() => cached);
+                        return cached || fetchPromise;
+                    })
+                )
+            );
+        });
+    `;
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+</script>
+
+</body>
+</html>
