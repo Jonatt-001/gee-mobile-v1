@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#020617">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GeeFox">
+<title>GeeFox • Repository Migration</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<style>
+:root{
+ --bg:#020617;--panel:#0b1220;--panel2:#111827;--panel3:#172033;--text:#f8fafc;
+ --muted:#94a3b8;--dim:#64748b;--line:#253044;--blue:#3b82f6;--blue2:#2563eb;
+ --green:#10b981;--red:#ef4444;--amber:#f59e0b;--shadow:0 20px 60px rgba(0,0,0,.38);
+ --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif}
+body{padding:calc(12px + var(--safe-top)) 14px calc(28px + var(--safe-bottom));-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:auto}
+.top{display:flex;align-items:center;gap:12px;margin:4px 2px 18px}
+.back{width:42px;height:42px;border:1px solid var(--line);background:#0d1420;color:#fff;border-radius:14px;display:grid;place-items:center}
+.back svg{width:20px}
+.brand{flex:1}.eyebrow{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#60a5fa}.title{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-top:2px}
+.card{background:linear-gradient(180deg,rgba(17,24,39,.98),rgba(8,14,25,.98));border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+.hero{padding:20px}.hero h1{font-size:24px;line-height:1.1;margin:0 0 8px;letter-spacing:-.7px}.hero p{color:var(--muted);font-size:13px;line-height:1.55;margin:0}
+.step{display:flex;gap:11px;align-items:flex-start}.stepnum{width:28px;height:28px;flex:0 0 28px;border-radius:9px;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.28);color:#60a5fa;display:grid;place-items:center;font-size:12px;font-weight:800}.steptitle{font-size:14px;font-weight:800}.stepsub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+label{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 8px}
+.row{display:flex;gap:9px}.row>*{min-width:0}.grow{flex:1}
+input,select{width:100%;background:#070d18;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:13px 13px;outline:none}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#94a3b8 50%),linear-gradient(135deg,#94a3b8 50%,transparent 50%);background-position:calc(100% - 17px) 18px,calc(100% - 12px) 18px;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:36px}
+.btn{border:1px solid transparent;border-radius:12px;padding:12px 14px;color:#fff;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.btn:disabled{opacity:.45;cursor:not-allowed}.primary{background:linear-gradient(135deg,var(--blue),var(--blue2));box-shadow:0 8px 24px rgba(37,99,235,.22)}.secondary{background:#182234;border-color:#2a374b}.danger{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#fca5a5}.ghost{background:transparent;border-color:var(--line);color:var(--muted)}
+.full{width:100%}.hint{font-size:11px;color:var(--dim);line-height:1.45;margin-top:7px}
+.status{display:none;align-items:flex-start;gap:10px;border-radius:14px;padding:12px 13px;font-size:12px;line-height:1.45;margin-bottom:14px}.status.show{display:flex}.status.info{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.22);color:#bfdbfe}.status.success{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.22);color:#a7f3d0}.status.error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.22);color:#fecaca}.status.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.22);color:#fde68a}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.toolbar .btn{min-height:38px;padding:9px 11px;font-size:11px}
+.root-list{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:#060b14;max-height:440px;overflow-y:auto}
+.item{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid rgba(37,48,68,.72);min-height:54px}.item:last-child{border-bottom:0}.item.selected{background:rgba(59,130,246,.07)}.item input[type=checkbox]{width:20px;height:20px;accent-color:var(--blue);flex:0 0 auto}.kind{width:31px;height:31px;border-radius:9px;background:#111b2b;display:grid;place-items:center;flex:0 0 31px;color:#93c5fd}.kind.folder{color:#60a5fa}.kind svg{width:17px}.item-main{min-width:0;flex:1}.name{font-size:13px;font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.meta{font-size:10px;color:var(--dim);margin-top:3px}.badge{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:4px 7px;border-radius:999px;background:#111827;color:#64748b;border:1px solid #253044}.badge.keep{color:#93c5fd;background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.18)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.metric{background:#080f1c;border:1px solid var(--line);border-radius:13px;padding:11px}.metric strong{display:block;font-size:18px}.metric span{display:block;color:var(--dim);font-size:10px;margin-top:2px}
+.warning{padding:12px;border-radius:13px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22);color:#fde68a;font-size:11px;line-height:1.5;margin-top:12px}
+.check{display:flex;align-items:flex-start;gap:9px;margin-top:12px;font-size:12px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:500}.check input{width:18px;height:18px;flex:0 0 18px;accent-color:var(--blue);margin-top:0}
+.progress{height:8px;background:#070d18;border-radius:99px;overflow:hidden;border:1px solid var(--line);margin:12px 0 8px}.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),#60a5fa);transition:width .2s}
+.progressline{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}
+.log{background:#030712;border:1px solid var(--line);border-radius:13px;padding:11px;max-height:180px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;line-height:1.6;color:#94a3b8}.log div.ok{color:#6ee7b7}.log div.err{color:#fca5a5}.log div.warn{color:#fde68a}
+.hidden{display:none!important}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions .primary{grid-column:1/-1}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.74);backdrop-filter:blur(10px);display:none;align-items:flex-end;justify-content:center;padding:14px;z-index:50}.modal.active{display:flex}.sheet{width:100%;max-width:620px;background:#0b1220;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 30px 90px rgba(0,0,0,.6);max-height:88dvh;overflow:auto}.sheet h2{font-size:18px;margin:0 0 7px}.sheet p{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 14px}.sheet-actions{display:flex;gap:8px;margin-top:14px}.sheet-actions .btn{flex:1}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media(min-width:700px){body{padding-top:28px}.modal{align-items:center}.sheet{border-radius:20px}.actions{grid-template-columns:1fr 1fr 1fr}.actions .primary{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <button class="back" onclick="history.back()" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg></button>
+    <div class="brand"><div class="eyebrow">GeeFox Git Utility</div><div class="title">Repository Migration</div></div>
+  </div>
+
+  <section class="card hero">
+    <h1>Move your app into <code>app/</code></h1>
+    <p>This tool performs a repository-level migration from your phone. It scans the current branch, lets you choose exactly what belongs inside <strong>app/</strong>, previews the change, then creates one Git commit using the Git data API.</p>
+  </section>
+
+  <div id="status" class="status"></div>
+
+  <section class="card">
+    <div class="step"><div class="stepnum">1</div><div><div class="steptitle">Choose repository</div><div class="stepsub">Your existing GeeFox session is used. No GitHub token is entered into this page.</div></div></div>
+    <div style="height:14px"></div>
+    <label>Repository</label>
+    <select id="repo"></select>
+    <div style="height:12px"></div>
+    <label>Branch</label>
+    <select id="branch"><option>Loading...</option></select>
+    <div class="hint">The migration is performed against the selected branch. A new commit is created; existing file blobs are reused.</div>
+  </section>
+
+  <section class="card">
+    <div class="step"><div class="stepnum">2</div><div><div class="steptitle">Scan the repository</div><div class="stepsub">Root folders and files are shown below. Select the application items you want moved into <code>app/</code>.</div></div></div>
+    <div style="height:14px"></div>
+    <div class="toolbar">
+      <button class="btn secondary" id="scanBtn" onclick="scanRepo()">Scan repository</button>
+      <button class="btn ghost" onclick="selectRecommended()">Select app items</button>
+      <button class="btn ghost" onclick="selectAll()">Select all</button>
+      <button class="btn ghost" onclick="clearAll()">Clear</button>
+    </div>
+    <div class="summary">
+      <div class="metric"><strong id="rootCount">0</strong><span>root items</span></div>
+      <div class="metric"><strong id="selectedCount">0</strong><span>selected</span></div>
+      <div class="metric"><strong id="fileCount">0</strong><span>files to move</span></div>
+    </div>
+    <div id="rootList" class="root-list"><div style="padding:20px;text-align:center;color:#64748b;font-size:12px">Scan the repository to begin.</div></div>
+  </section>
+
+  <section class="card">
+    <div class="step"><div class="stepnum">3</div><div><div class="steptitle">Migration target</div><div class="stepsub">The selected root items will be relocated without downloading and re-uploading their contents.</div></div></div>
+    <div style="height:14px"></div>
+    <label>Destination folder</label>
+    <input id="destination" value="app" spellcheck="false">
+    <div class="hint">Use a folder name such as <code>app</code>. Do not use a leading slash.</div>
+    <div id="collisionBox" class="warning hidden"></div>
+  </section>
+
+  <section class="card">
+    <div class="step"><div class="stepnum">4</div><div><div class="steptitle">Validate and commit</div><div class="stepsub">Nothing is changed until you explicitly confirm the final migration.</div></div></div>
+    <div style="height:14px"></div>
+    <div class="actions">
+      <button class="btn secondary" id="previewBtn" onclick="previewMigration()">Preview migration</button>
+      <button class="btn primary" id="migrateBtn" onclick="openConfirm()" disabled>Move selected files</button>
+    </div>
+    <div id="progressBox" class="hidden" style="margin-top:14px">
+      <div class="progress"><i id="progressFill"></i></div>
+      <div class="progressline"><span id="progressText">Preparing...</span><span id="progressPct">0%</span></div>
+      <div style="height:9px"></div>
+      <div class="log" id="log"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="step"><div class="stepnum">!</div><div><div class="steptitle">Important deployment note</div><div class="stepsub">If your repository contains a root-level <code>api/</code> directory for Vercel/server functions, keep it outside <code>app/</code> unless your deployment architecture is intentionally configured to move it. This tool does not force you to move anything.</div></div></div>
+  </section>
+</div>
+
+<div class="modal" id="confirmModal">
+  <div class="sheet">
+    <h2>Confirm repository migration</h2>
+    <p id="confirmText"></p>
+    <div class="warning">This operation creates a new commit that adds the selected content under the destination and removes the old root paths. It is designed to preserve the existing Git blobs, but it is still a real repository change.</div>
+    <label class="check"><input type="checkbox" id="confirmCheck"> I have reviewed the selected items and want to commit this migration.</label>
+    <div class="sheet-actions">
+      <button class="btn secondary" onclick="closeConfirm()">Cancel</button>
+      <button class="btn primary" id="confirmBtn" onclick="runMigration()" disabled>Commit migration</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const state = {
+  owner:'',
+  repos:[],
+  repo:null,
+  branch:'',
+  rootItems:[],
+  selected:new Set(),
+  tree:[],
+  baseCommit:null,
+  baseTree:null,
+  busy:false
+};
+
+const API_BASE = '/api/github';
+
+function $(id){return document.getElementById(id)}
+function setStatus(message,type='info'){
+  const el=$('status'); el.className='status show '+type; el.textContent=message;
+}
+function clearStatus(){ $('status').className='status'; }
+function log(message,type=''){
+  const el=$('log'); const row=document.createElement('div'); row.className=type; row.textContent='› '+message; el.appendChild(row); el.scrollTop=el.scrollHeight;
+}
+function setProgress(percent,text){
+  $('progressFill').style.width=Math.max(0,Math.min(100,percent))+'%';
+  $('progressPct').textContent=Math.round(percent)+'%';
+  $('progressText').textContent=text;
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+async function githubAPI(endpoint,options={}){
+  const headers={...(options.headers||{})};
+  delete headers.Authorization; delete headers.authorization;
+  headers.Accept=headers.Accept||'application/vnd.github+json';
+  if(options.body && !headers['Content-Type'] && !headers['content-type']) headers['Content-Type']='application/json';
+  const response=await fetch(API_BASE+'?path='+encodeURIComponent(endpoint),{...options,headers,credentials:'include',cache:'no-store'});
+  if(!response.ok){
+    const data=await response.json().catch(()=>({}));
+    throw new Error(data.message||data.error||('GitHub API error: '+response.status));
+  }
+  return response;
+}
+function esc(s){
+  return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function isSafePath(p){
+  return p && !p.startsWith('/') && !p.includes('..') && !p.includes('//');
+}
+function rootName(path){return path.split('/')[0]}
+function icon(isFolder){
+ return isFolder
+ ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>'
+ : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5"/></svg>';
+}
+
+async function init(){
+ try{
+  const session=await fetch('/api/token',{credentials:'include',cache:'no-store'});
+  if(!session.ok) throw new Error('Session expired. Sign in to GeeFox first.');
+  const user=await (await githubAPI('/user')).json();
+  state.owner=user.login;
+  const repos=await (await githubAPI('/user/repos?per_page=100&sort=updated')).json();
+  state.repos=repos;
+  const select=$('repo');
+  select.innerHTML='<option value="">Select a repository...</option>'+repos.map(r=>`<option value="${esc(r.full_name)}">${r.private?'🔒':'○'} ${esc(r.name)}</option>`).join('');
+  select.onchange=handleRepo;
+  if(repos.length===1){select.value=repos[0].full_name; await handleRepo()}
+  else setStatus('Choose the GeeFox repository you want to repair.','info');
+ }catch(e){setStatus(e.message,'error')}
+}
+async function handleRepo(){
+ const full=$('repo').value;
+ if(!full)return;
+ state.repo=state.repos.find(r=>r.full_name===full);
+ state.selected.clear(); state.rootItems=[]; state.tree=[]; state.baseCommit=null; state.baseTree=null;
+ $('rootList').innerHTML='<div style="padding:20px;text-align:center;color:#64748b;font-size:12px">Loading branches...</div>';
+ try{
+  const branches=await (await githubAPI(`/repos/${state.repo.owner.login}/${state.repo.name}/branches?per_page=100`)).json();
+  $('branch').innerHTML=branches.map(b=>`<option value="${esc(b.name)}">${esc(b.name)}${b.name===state.repo.default_branch?' (default)':''}</option>`).join('');
+  $('branch').value=state.repo.default_branch;
+  await scanRepo();
+ }catch(e){setStatus('Could not load branches: '+e.message,'error')}
+}
+async function scanRepo(){
+ if(!state.repo){setStatus('Select a repository first.','error');return}
+ if(state.busy)return;
+ const branch=$('branch').value;
+ if(!branch){setStatus('Select a branch first.','error');return}
+ state.branch=branch; state.selected.clear();
+ $('scanBtn').disabled=true; $('scanBtn').innerHTML='<span class="spinner"></span> Scanning';
+ $('rootList').innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8">Reading repository tree...</div>';
+ try{
+  const ref=await (await githubAPI(`/repos/${state.repo.owner.login}/${state.repo.name}/git/ref/heads/${encodeURIComponent(branch)}`)).json();
+  const commitSha=ref.object.sha;
+  const commit=await (await githubAPI(`/repos/${state.repo.owner.login}/${state.repo.name}/git/commits/${commitSha}`)).json();
+  state.baseCommit=commitSha; state.baseTree=commit.tree.sha;
+  const tree=await (await githubAPI(`/repos/${state.repo.owner.login}/${state.repo.name}/git/trees/${commit.tree.sha}?recursive=1`)).json();
+  if(tree.truncated) throw new Error('GitHub returned a truncated tree. This repository is too large for a safe single-tree migration.');
+  state.tree=tree.tree||[];
+  buildRootItems();
+  renderRoot();
+  setStatus(`Scan complete. ${state.rootItems.length} root items found on ${branch}.`,'success');
+ }catch(e){
+  $('rootList').innerHTML='<div style="padding:20px;text-align:center;color:#fca5a5">'+esc(e.message)+'</div>';
+  setStatus('Scan failed: '+e.message,'error');
+ }finally{
+  $('scanBtn').disabled=false; $('scanBtn').textContent='Scan repository';
+ }
+}
+function buildRootItems(){
+ const map=new Map();
+ for(const entry of state.tree){
+  const root=rootName(entry.path);
+  if(!map.has(root)) map.set(root,{name:root,type:'unknown',files:0,size:0});
+  const item=map.get(root);
+  if(entry.path===root && entry.type==='tree') item.type='folder';
+  if(entry.path===root && entry.type==='blob') item.type='file';
+  if(entry.type==='blob'){item.files++; item.size+=entry.size||0}
+ }
+ state.rootItems=[...map.values()].sort((a,b)=>(a.type==='folder'?0:1)-(b.type==='folder'?0:1)||a.name.localeCompare(b.name));
+ $('rootCount').textContent=state.rootItems.length;
+ updateCounts();
+}
+function updateCounts(){
+ $('selectedCount').textContent=state.selected.size;
+ let files=0;
+ for(const item of state.rootItems) if(state.selected.has(item.name)){
+  files+=state.tree.filter(e=>e.type==='blob'&&(e.path===item.name||e.path.startsWith(item.name+'/'))).length;
+ }
+ $('fileCount').textContent=files;
+ const dest=normalizeDest();
+ const collision=[];
+ if(dest){
+  for(const e of state.tree){
+   if(e.path===dest || e.path.startsWith(dest+'/')){collision.push(e.path);if(collision.length>=3)break}
+  }
+ }
+ if(collision.length){
+  $('collisionBox').className='warning';
+  $('collisionBox').textContent='Warning: '+dest+'/ already contains content. Existing destination paths may be overwritten by matching moved paths. Review the preview carefully.';
+ }else $('collisionBox').className='warning hidden';
+ $('migrateBtn').disabled=state.selected.size===0||!state.repo||state.busy;
+}
+function renderRoot(){
+ const el=$('rootList');
+ if(!state.rootItems.length){el.innerHTML='<div style="padding:20px;text-align:center;color:#64748b">No root content found.</div>';updateCounts();return}
+ el.innerHTML=state.rootItems.map(item=>{
+  const checked=state.selected.has(item.name);
+  const protectedName=['.git','.github','api','package.json','package-lock.json','vercel.json'].includes(item.name);
+  return `<div class="item ${checked?'selected':''}">
+   <input type="checkbox" ${checked?'checked':''} onchange="toggleItem('${esc(item.name).replace(/'/g,"\\\\'")}')" aria-label="Select ${esc(item.name)}">
+   <div class="kind ${item.type==='folder'?'folder':''}">${icon(item.type==='folder')}</div>
+   <div class="item-main"><div class="name">${esc(item.name)}</div><div class="meta">${item.type==='folder'?'Folder · '+item.files+' file'+(item.files===1?'':'s'):'File'}${item.size?' · '+formatBytes(item.size):''}</div></div>
+   ${protectedName?'<span class="badge keep">keep</span>':''}
+  </div>`;
+ }).join('');
+ updateCounts();
+}
+function toggleItem(name){
+ if(state.selected.has(name))state.selected.delete(name);else state.selected.add(name);
+ renderRoot();
+}
+function selectAll(){state.rootItems.forEach(x=>state.selected.add(x.name));renderRoot()}
+function clearAll(){state.selected.clear();renderRoot()}
+function selectRecommended(){
+ state.selected.clear();
+ const keep=new Set(['.git','.github','api','package.json','package-lock.json','vercel.json','README.md','LICENSE','LICENSE.md','doc','docs']);
+ const commonFrontend=/^(assets|bin|explore|icons|private|.*\\.(html|css|js|json|png|jpg|jpeg|webp|svg|ico|gif|woff|woff2|ttf|txt))$/i;
+ state.rootItems.forEach(x=>{if(!keep.has(x.name)&&commonFrontend.test(x.name))state.selected.add(x.name)});
+ renderRoot();
+ setStatus('Recommended selection applied. Review it before migrating.','info');
+}
+function normalizeDest(){
+ let d=$('destination').value.trim().replace(/^\/+|\/+$/g,'');
+ if(!d||d==='.')return '';
+ if(!isSafePath(d))return '';
+ return d;
+}
+$('destination').addEventListener('input',updateCounts);
+$('branch').addEventListener('change',()=>{if(state.repo)scanRepo()});
+
+function selectedEntries(){
+ const roots=state.selected;
+ return state.tree.filter(e=>{
+  const r=rootName(e.path);
+  return roots.has(r) && (e.type==='blob'||e.type==='tree');
+ });
+}
+function previewMigration(){
+ if(!state.selected.size){setStatus('Select at least one root item.','error');return}
+ const dest=normalizeDest();
+ if(!dest){setStatus('Enter a valid destination folder.','error');return}
+ const entries=selectedEntries();
+ const files=entries.filter(e=>e.type==='blob');
+ const paths=files.map(e=>dest+'/'+e.path);
+ const collisions=state.tree.filter(e=>paths.includes(e.path)).map(e=>e.path);
+ $('confirmText').textContent=`${state.selected.size} root item(s) will move into ${dest}/, containing ${files.length} tracked file(s). ${collisions.length?collisions.length+' destination path(s) already exist and will be replaced by the moved blobs.':'No destination file collisions were detected.'}`;
+ $('confirmCheck').checked=false;$('confirmBtn').disabled=true;
+ $('confirmModal').classList.add('active');
+}
+function openConfirm(){previewMigration()}
+function closeConfirm(){$('confirmModal').classList.remove('active')}
+$('confirmCheck').addEventListener('change',e=>$('confirmBtn').disabled=!e.target.checked);
+
+function bytesToBase64Utf8(str){return btoa(unescape(encodeURIComponent(str)))}
+function formatBytes(n){
+ if(n<1024)return n+' B'; if(n<1024*1024)return (n/1024).toFixed(1)+' KB'; return (n/1024/1024).toFixed(1)+' MB'
+}
+async function runMigration(){
+ if(state.busy)return;
+ closeConfirm(); state.busy=true; $('migrateBtn').disabled=true; $('progressBox').classList.remove('hidden'); $('log').innerHTML='';
+ const dest=normalizeDest(); const files=state.tree.filter(e=>e.type==='blob'&&state.selected.has(rootName(e.path)));
+ try{
+  setProgress(2,'Validating branch...');
+  log('Branch: '+state.branch);
+  log('Base commit: '+state.baseCommit);
+  log('Base tree: '+state.baseTree);
+  if(!files.length)throw new Error('No files were found in the selected root items.');
+  if(files.some(f=>!isSafePath(dest+'/'+f.path)))throw new Error('Unsafe destination path detected.');
+  const movedPaths=new Set(files.map(f=>dest+'/'+f.path));
+  const protectedRoots=new Set(['.git']);
+  for(const root of state.selected)if(protectedRoots.has(root))throw new Error('The .git directory cannot be migrated through the GitHub API.');
+
+  const treeEntries=[];
+  let i=0;
+  for(const f of files){
+   const newPath=dest+'/'+f.path;
+   treeEntries.push({path:newPath,mode:f.mode||'100644',type:'blob',sha:f.sha});
+   treeEntries.push({path:f.path,mode:f.mode||'100644',type:'blob',sha:null});
+   i++; setProgress(8+(i/files.length)*32,'Building move plan...'); 
+  }
+  log('Prepared '+files.length+' file moves.');
+  const unique=[];
+  const seen=new Set();
+  for(const e of treeEntries){const k=e.path;if(!seen.has(k)){seen.add(k);unique.push(e)}}
+  log('Creating one Git tree commit...');
+  setProgress(44,'Creating Git tree...');
+  const treeRes=await githubAPI(`/repos/${state.repo.owner.login}/${state.repo.name}/git/trees`,{
+   method:'POST',body:JSON.stringify({base_tree:state.baseTree,tree:unique})
+  });
+  const newTree=await treeRes.json();
+  if(!newTree.sha)throw new Error('GitHub did not return a new tree SHA.');
+  log('New tree: '+newTree.sha,'ok');
+  setProgress(62,'Creating commit...');
+  const commitRes=await githubAPI(`/repos/${state.repo.owner.login}/${state.repo.name}/git/commits`,{
+   method:'POST',body:JSON.stringify({
+    message:`Move application files into ${dest}/`,
+    tree:newTree.sha,
+    parents:[state.baseCommit]
+   })
+  });
+  const newCommit=await commitRes.json();
+  if(!newCommit.sha)throw new Error('GitHub did not return a new commit SHA.');
+  log('New commit: '+newCommit.sha,'ok');
+  setProgress(78,'Updating branch reference...');
+  await githubAPI(`/repos/${state.repo.owner.login}/${state.repo.name}/git/refs/heads/${encodeURIComponent(state.branch)}`,{
+   method:'PATCH',body:JSON.stringify({sha:newCommit.sha,force:false})
+  });
+  log('Branch updated successfully.','ok');
+  setProgress(100,'Migration complete');
+  setStatus(`Migration complete. ${files.length} file(s) are now under ${dest}/ in commit ${newCommit.sha.slice(0,7)}.`,'success');
+  $('confirmBtn').disabled=true;
+  await sleep(700);
+  await scanRepo();
+ }catch(e){
+  log(e.message,'err'); setProgress(0,'Migration failed');
+  setStatus('Migration failed: '+e.message+' No final branch update is performed unless the branch update step was reached.','error');
+ }finally{
+  state.busy=false; updateCounts();
+ }
+}
+init();
+</script>
+</body>
+</html>
